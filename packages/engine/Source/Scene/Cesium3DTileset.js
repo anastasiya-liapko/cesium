@@ -3495,12 +3495,13 @@ Cesium3DTileset.prototype.destroy = function () {
 
     while (stack.length > 0) {
       const tile = stack.pop();
-      tile.destroy();
 
       const children = tile.children;
       for (let i = 0; i < children.length; ++i) {
         stack.push(children[i]);
       }
+      
+      tile.destroy();
     }
   }
   this._root = undefined;
