@@ -1087,6 +1087,7 @@ describe(
         uniformMap: uniformMap,
       }).contextToRender([255, 0, 0, 255]);
 
+      cubeMap = cubeMap.destroy();
       cxt.destroyForSpecs();
     });
 
