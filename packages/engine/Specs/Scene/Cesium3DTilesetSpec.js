@@ -2622,16 +2622,20 @@ describe(
         tileset
       ) {
         const root = tileset.root;
+        const rootChild0 = root.children[0];
+        const rootChild1 = root.children[1];
+        const rootChild2 = root.children[2];
+        const rootChild3 = root.children[3];
         expect(tileset.isDestroyed()).toEqual(false);
         scene.primitives.remove(tileset);
         expect(tileset.isDestroyed()).toEqual(true);
 
         // Check that all tiles are destroyed
         expect(root.isDestroyed()).toEqual(true);
-        expect(root.children[0].isDestroyed()).toEqual(true);
-        expect(root.children[1].isDestroyed()).toEqual(true);
-        expect(root.children[2].isDestroyed()).toEqual(true);
-        expect(root.children[3].isDestroyed()).toEqual(true);
+        expect(rootChild0.isDestroyed()).toEqual(true);
+        expect(rootChild1.isDestroyed()).toEqual(true);
+        expect(rootChild2.isDestroyed()).toEqual(true);
+        expect(rootChild3.isDestroyed()).toEqual(true);
       });
     });
 
@@ -2648,17 +2652,18 @@ describe(
 
       const statistics = tileset._statistics;
       expect(statistics.numberOfPendingRequests).toEqual(1);
-      scene.primitives.remove(tileset);
 
       await pollToPromise(() => {
         scene.renderForSpecs();
         return statistics.numberOfPendingRequests === 0;
       });
 
+      scene.primitives.remove(tileset);
+
       expect(root.content).toBeUndefined();
 
       // Expect the root to not have added any children from the external tileset JSON file
-      expect(root.children.length).toEqual(0);
+      expect(root.children).toBeUndefined();
     });
 
     it("destroys before tile finishes loading", async function () {
@@ -2667,12 +2672,13 @@ describe(
       scene.primitives.add(tileset);
       const root = tileset.root;
       scene.renderForSpecs(); // Request root
-      scene.primitives.remove(tileset);
 
       await pollToPromise(() => {
         scene.renderForSpecs();
         return tileset._statistics.numberOfPendingRequests === 0;
       });
+
+      scene.primitives.remove(tileset);
 
       expect(root.content).toBeUndefined();
     });
