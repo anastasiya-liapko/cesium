@@ -640,7 +640,7 @@ describe(
       visualizer.destroy();
 
       expect(destroySpy).toHaveBeenCalled();
-      expect(visualizer._updaterSets.values.length).toBe(0);
+      expect(visualizer.isDestroyed()).toEqual(true);
     });
 
     it("Computes dynamic geometry bounding sphere.", function () {
