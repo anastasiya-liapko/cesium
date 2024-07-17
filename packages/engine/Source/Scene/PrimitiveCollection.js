@@ -226,7 +226,7 @@ PrimitiveCollection.prototype.removeAll = function () {
   const primitives = this._primitives;
   const length = primitives.length;
   for (let i = 0; i < length; ++i) {
-    if (!defined(primitives[i]) || primitives[i].isDestroyed()) {
+    if (!this.contains(primitives[i])) {
       continue;
     }
 

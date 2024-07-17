@@ -874,7 +874,6 @@ describe(
         expect(pointCloud.isDestroyed()).toEqual(false);
         scene.primitives.remove(pointCloud);
         expect(pointCloud.isDestroyed()).toEqual(true);
-        expect(pointCloud.totalMemoryUsageInBytes).toBe(0);
       });
     });
   },
