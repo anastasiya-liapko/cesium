@@ -456,6 +456,9 @@ TextureAtlas.prototype.addImage = function (id, image) {
 
   const that = this;
   indexPromise = Promise.resolve(image).then(function (image) {
+    if (that.isDestroyed()) {
+      return;
+    }
     const index = getIndex(that, image);
     that._indexHash[id] = index;
     return index;
