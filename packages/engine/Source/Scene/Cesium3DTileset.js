@@ -3628,13 +3628,11 @@ Cesium3DTileset.prototype.updateHeight = function (
 
   const removeCallback = () => {
     const addedCallbacks = this._addHeightCallbacks;
-    if (defined(addedCallbacks)) {
-      const length = addedCallbacks.length;
-      for (let i = 0; i < length; ++i) {
-        if (addedCallbacks[i] === object) {
-          addedCallbacks.splice(i, 1);
-          break;
-        }
+    const length = addedCallbacks.length;
+    for (let i = 0; i < length; ++i) {
+      if (addedCallbacks[i] === object) {
+        addedCallbacks.splice(i, 1);
+        break;
       }
     }
 

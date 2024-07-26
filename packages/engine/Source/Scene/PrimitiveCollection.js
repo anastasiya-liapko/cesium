@@ -189,11 +189,11 @@ PrimitiveCollection.prototype.remove = function (primitive) {
 
       delete primitive._external._composites[this._guid];
 
+      this._primitiveRemoved.raiseEvent(primitive);
+
       if (this.destroyPrimitives) {
         primitive.destroy();
       }
-
-      this._primitiveRemoved.raiseEvent(primitive);
 
       return true;
     }
@@ -232,11 +232,11 @@ PrimitiveCollection.prototype.removeAll = function () {
 
     delete primitives[i]._external._composites[this._guid];
 
+    this._primitiveRemoved.raiseEvent(primitives[i]);
+
     if (this.destroyPrimitives) {
       primitives[i].destroy();
     }
-
-    this._primitiveRemoved.raiseEvent(primitives[i]);
   }
   this._primitives = [];
 };
