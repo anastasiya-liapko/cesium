@@ -8,6 +8,7 @@ import DeveloperError from "../Core/DeveloperError.js";
 import Ellipsoid from "../Core/Ellipsoid.js";
 import FeatureDetection from "../Core/FeatureDetection.js";
 import formatError from "../Core/formatError.js";
+import RuntimeError from "../Core/RuntimeError.js";
 import getElement from "../DataSources/getElement.js";
 import Globe from "../Scene/Globe.js";
 import ImageryLayer from "../Scene/ImageryLayer.js";
@@ -399,6 +400,18 @@ function CesiumWidget(container, options) {
       }
     };
     scene.renderError.addEventListener(this._onRenderError);
+
+    canvas.addEventListener(
+      "webglcontextlost",
+      function (event) {
+        event.preventDefault();
+        that._onRenderError(
+          scene,
+          new RuntimeError("The browser lost WebGL context.")
+        );
+      },
+      false
+    );
   } catch (error) {
     if (showRenderLoopErrors) {
       const title = "Error constructing CesiumWidget.";
