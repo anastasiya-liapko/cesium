@@ -106,7 +106,6 @@ const requestRenderAfterFrame = function (scene) {
  * @param {number} [options.depthPlaneEllipsoidOffset=0.0] Adjust the DepthPlane to address rendering artefacts below ellipsoid zero elevation.
  * @param {number} [options.msaaSamples=1] If provided, this value controls the rate of multisample antialiasing. Typical multisampling rates are 2, 4, and sometimes 8 samples per pixel. Higher sampling rates of MSAA may impact performance in exchange for improved visual quality. This value only applies to WebGL2 contexts that support multisample render targets.
  * @param {number} [options.primitivesRenderThrottleTime=0.0] Limiting the number of times primitives get rendered in a certain time period (in milliseconds).
- * @param {number} [options.primitivesRenderDebounceTime=0.0] Primitives are only rendered once per camera change (in milliseconds).
  *
  * @see CesiumWidget
  * @see {@link http://www.khronos.org/registry/webgl/specs/latest/#5.2|WebGLContextAttributes}
@@ -231,11 +230,6 @@ function Scene(options) {
     options.primitivesRenderThrottleTime,
     0
   );
-  this._primitivesRenderDebounceTime = defaultValue(
-    options.primitivesRenderDebounceTime,
-    0
-  );
-  this._lastCameraChangedTime = 0;
   this._lastPrimitivesRenderedTime = 0;
 
   /**
@@ -1686,22 +1680,6 @@ Object.defineProperties(Scene.prototype, {
     set: function (value) {
       value = !isNaN(+value) ? +value : 0;
       this._primitivesRenderThrottleTime = value;
-    },
-  },
-
-  /**
-   * Primitives are only rendered once per camera change (in milliseconds).
-   * @memberof Scene.prototype
-   * @type {number}
-   * @default 0
-   */
-  primitivesRenderDebounceTime: {
-    get: function () {
-      return this._primitivesRenderDebounceTime;
-    },
-    set: function (value) {
-      value = !isNaN(+value) ? +value : 0;
-      this._primitivesRenderDebounceTime = value;
     },
   },
 });
@@ -4077,16 +4055,13 @@ Scene.prototype.render = function (time) {
     time = JulianDate.now();
   }
 
-  const now = Date.now();
-
   const cameraChanged = this._view.checkForCameraUpdates(this);
   if (cameraChanged) {
     this._globeHeightDirty = true;
-    this._lastCameraChangedTime = now;
   }
 
+  const now = Date.now();
   const shouldRenderPrimitives =
-    now - this._lastCameraChangedTime > this._primitivesRenderDebounceTime &&
     now - this._lastPrimitivesRenderedTime > this._primitivesRenderThrottleTime;
   if (shouldRenderPrimitives) {
     this._lastPrimitivesRenderedTime = now;
@@ -4135,14 +4110,12 @@ Scene.prototype.render = function (time) {
    * Passes update. Add any passes here
    *
    */
-  if (shouldRenderPrimitives) {
-    if (this.primitives.show) {
-      tryAndCatchError(this, updateMostDetailedRayPicks);
-      tryAndCatchError(this, updatePreloadPass);
-      tryAndCatchError(this, updatePreloadFlightPass);
-      if (!shouldRender) {
-        tryAndCatchError(this, updateRequestRenderModeDeferCheckPass);
-      }
+  if (this.primitives.show) {
+    tryAndCatchError(this, updateMostDetailedRayPicks);
+    tryAndCatchError(this, updatePreloadPass);
+    tryAndCatchError(this, updatePreloadFlightPass);
+    if (!shouldRender) {
+      tryAndCatchError(this, updateRequestRenderModeDeferCheckPass);
     }
   }
 

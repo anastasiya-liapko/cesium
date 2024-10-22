@@ -149,7 +149,6 @@ function configureCameraFrustum(widget) {
  * @param {number} [options.maximumRenderTimeChange=0.0] If requestRenderMode is true, this value defines the maximum change in simulation time allowed before a render is requested. See {@link https://cesium.com/blog/2018/01/24/cesium-scene-rendering-performance/|Improving Performance with Explicit Rendering}.
  * @param {number} [options.msaaSamples=1] If provided, this value controls the rate of multisample antialiasing. Typical multisampling rates are 2, 4, and sometimes 8 samples per pixel. Higher sampling rates of MSAA may impact performance in exchange for improved visual quality. This value only applies to WebGL2 contexts that support multisample render targets.
  * @param {number} [options.primitivesRenderThrottleTime=0.0] Limiting the number of times primitives get rendered in a certain time period (in milliseconds).
- * @param {number} [options.primitivesRenderDebounceTime=0.0] Primitives are only rendered once per camera change (in milliseconds).
  *
  * @exception {DeveloperError} Element with id "container" does not exist in the document.
  *
@@ -291,7 +290,6 @@ function CesiumWidget(container, options) {
       depthPlaneEllipsoidOffset: options.depthPlaneEllipsoidOffset,
       msaaSamples: options.msaaSamples,
       primitivesRenderThrottleTime: options.primitivesRenderThrottleTime,
-      primitivesRenderDebounceTime: options.primitivesRenderDebounceTime,
     });
     this._scene = scene;
 

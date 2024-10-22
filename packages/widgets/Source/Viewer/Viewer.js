@@ -343,7 +343,6 @@ function enableVRUI(viewer, enabled) {
  * @property {number} [depthPlaneEllipsoidOffset=0.0] Adjust the DepthPlane to address rendering artefacts below ellipsoid zero elevation.
  * @property {number} [msaaSamples=1] If provided, this value controls the rate of multisample antialiasing. Typical multisampling rates are 2, 4, and sometimes 8 samples per pixel. Higher sampling rates of MSAA may impact performance in exchange for improved visual quality. This value only applies to WebGL2 contexts that support multisample render targets.
  * @property {number} [primitivesRenderThrottleTime=0.0] Limiting the number of times primitives get rendered in a certain time period (in milliseconds).
- * @property {number} [primitivesRenderDebounceTime=0.0] Primitives are only rendered once per camera change (in milliseconds).
  */
 
 /**
@@ -518,7 +517,6 @@ Either specify options.terrainProvider instead or set options.baseLayerPicker to
     depthPlaneEllipsoidOffset: options.depthPlaneEllipsoidOffset,
     msaaSamples: options.msaaSamples,
     primitivesRenderThrottleTime: options.primitivesRenderThrottleTime,
-    primitivesRenderDebounceTime: options.primitivesRenderDebounceTime,
   });
 
   let dataSourceCollection = options.dataSources;
