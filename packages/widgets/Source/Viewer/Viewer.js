@@ -342,8 +342,8 @@ function enableVRUI(viewer, enabled) {
  * @property {number} [maximumRenderTimeChange=0.0] If requestRenderMode is true, this value defines the maximum change in simulation time allowed before a render is requested. See {@link https://cesium.com/blog/2018/01/24/cesium-scene-rendering-performance/|Improving Performance with Explicit Rendering}.
  * @property {number} [depthPlaneEllipsoidOffset=0.0] Adjust the DepthPlane to address rendering artefacts below ellipsoid zero elevation.
  * @property {number} [msaaSamples=1] If provided, this value controls the rate of multisample antialiasing. Typical multisampling rates are 2, 4, and sometimes 8 samples per pixel. Higher sampling rates of MSAA may impact performance in exchange for improved visual quality. This value only applies to WebGL2 contexts that support multisample render targets.
- * @param {number} [options.primitivesRenderThrottleTime=0.0] Limiting the number of times primitives get rendered in a certain time period (in milliseconds).
- * @param {number} [options.primitivesRenderDebounceTime=0.0] Primitives are only rendered once per camera change (in milliseconds).
+ * @property {number} [primitivesRenderThrottleTime=0.0] Limiting the number of times primitives get rendered in a certain time period (in milliseconds).
+ * @property {number} [primitivesRenderDebounceTime=0.0] Primitives are only rendered once per camera change (in milliseconds).
  */
 
 /**
