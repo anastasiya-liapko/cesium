@@ -230,7 +230,7 @@ function Scene(options) {
     options.primitivesRenderThrottleTime,
     0
   );
-  this._lastPrimitivesRenderedTime = 0;
+  this._lastPrimitivesRenderTime = 0;
 
   /**
    * Exceptions occurring in <code>render</code> are always caught in order to raise the
@@ -4062,9 +4062,9 @@ Scene.prototype.render = function (time) {
 
   const now = Date.now();
   const shouldRenderPrimitives =
-    now - this._lastPrimitivesRenderedTime > this._primitivesRenderThrottleTime;
+    now - this._lastPrimitivesRenderTime > this._primitivesRenderThrottleTime;
   if (shouldRenderPrimitives) {
-    this._lastPrimitivesRenderedTime = now;
+    this._lastPrimitivesRenderTime = now;
   }
 
   // Determine if should render a new frame in request render mode
