@@ -105,6 +105,8 @@ const requestRenderAfterFrame = function (scene) {
  * @param {number} [options.maximumRenderTimeChange=0.0] If requestRenderMode is true, this value defines the maximum change in simulation time allowed before a render is requested. See {@link https://cesium.com/blog/2018/01/24/cesium-scene-rendering-performance/|Improving Performance with Explicit Rendering}.
  * @param {number} [options.depthPlaneEllipsoidOffset=0.0] Adjust the DepthPlane to address rendering artefacts below ellipsoid zero elevation.
  * @param {number} [options.msaaSamples=1] If provided, this value controls the rate of multisample antialiasing. Typical multisampling rates are 2, 4, and sometimes 8 samples per pixel. Higher sampling rates of MSAA may impact performance in exchange for improved visual quality. This value only applies to WebGL2 contexts that support multisample render targets.
+ * @param {number} [options.primitivesRenderThrottleTime=0.0] Limiting the number of times primitives get rendered in a certain time period (in milliseconds).
+ * @param {number} [options.primitivesRenderDebounceTime=0.0] Primitives are only rendered once per camera change (in milliseconds).
  *
  * @see CesiumWidget
  * @see {@link http://www.khronos.org/registry/webgl/specs/latest/#5.2|WebGLContextAttributes}
@@ -224,6 +226,17 @@ function Scene(options) {
   this._debugInspector = new DebugInspector();
 
   this._msaaSamples = defaultValue(options.msaaSamples, 1);
+
+  this._primitivesRenderThrottleTime = defaultValue(
+    options.primitivesRenderThrottleTime,
+    0
+  );
+  this._primitivesRenderDebounceTime = defaultValue(
+    options.primitivesRenderDebounceTime,
+    0
+  );
+  this._lastCameraChangedTime = 0;
+  this._lastPrimitivesRenderedTime = 0;
 
   /**
    * Exceptions occurring in <code>render</code> are always caught in order to raise the
@@ -1657,6 +1670,38 @@ Object.defineProperties(Scene.prototype, {
   globeHeight: {
     get: function () {
       return this._globeHeight;
+    },
+  },
+
+  /**
+   * Limiting the number of times primitives get rendered in a certain time period (in milliseconds).
+   * @memberof Scene.prototype
+   * @type {number}
+   * @default 0
+   */
+  primitivesRenderThrottleTime: {
+    get: function () {
+      return this._primitivesRenderThrottleTime;
+    },
+    set: function (value) {
+      value = !isNaN(+value) ? +value : 0;
+      this._primitivesRenderThrottleTime = value;
+    },
+  },
+
+  /**
+   * Primitives are only rendered once per camera change (in milliseconds).
+   * @memberof Scene.prototype
+   * @type {number}
+   * @default 0
+   */
+  primitivesRenderDebounceTime: {
+    get: function () {
+      return this._primitivesRenderDebounceTime;
+    },
+    set: function (value) {
+      value = !isNaN(+value) ? +value : 0;
+      this._primitivesRenderDebounceTime = value;
     },
   },
 });
@@ -4032,9 +4077,19 @@ Scene.prototype.render = function (time) {
     time = JulianDate.now();
   }
 
+  const now = Date.now();
+
   const cameraChanged = this._view.checkForCameraUpdates(this);
   if (cameraChanged) {
     this._globeHeightDirty = true;
+    this._lastCameraChangedTime = now;
+  }
+
+  const shouldRenderPrimitives =
+    now - this._lastCameraChangedTime > this._primitivesRenderDebounceTime &&
+    now - this._lastPrimitivesRenderedTime > this._primitivesRenderThrottleTime;
+  if (shouldRenderPrimitives) {
+    this._lastPrimitivesRenderedTime = now;
   }
 
   // Determine if should render a new frame in request render mode
@@ -4071,19 +4126,23 @@ Scene.prototype.render = function (time) {
     frameState.newFrame = true;
   }
 
-  tryAndCatchError(this, prePassesUpdate);
+  if (shouldRenderPrimitives) {
+    tryAndCatchError(this, prePassesUpdate);
+  }
 
   /**
    *
    * Passes update. Add any passes here
    *
    */
-  if (this.primitives.show) {
-    tryAndCatchError(this, updateMostDetailedRayPicks);
-    tryAndCatchError(this, updatePreloadPass);
-    tryAndCatchError(this, updatePreloadFlightPass);
-    if (!shouldRender) {
-      tryAndCatchError(this, updateRequestRenderModeDeferCheckPass);
+  if (shouldRenderPrimitives) {
+    if (this.primitives.show) {
+      tryAndCatchError(this, updateMostDetailedRayPicks);
+      tryAndCatchError(this, updatePreloadPass);
+      tryAndCatchError(this, updatePreloadFlightPass);
+      if (!shouldRender) {
+        tryAndCatchError(this, updateRequestRenderModeDeferCheckPass);
+      }
     }
   }
 
@@ -4101,11 +4160,15 @@ Scene.prototype.render = function (time) {
    *
    */
   updateDebugShowFramesPerSecond(this, shouldRender);
-  tryAndCatchError(this, postPassesUpdate);
+  if (shouldRenderPrimitives) {
+    tryAndCatchError(this, postPassesUpdate);
+  }
 
   // Often used to trigger events (so don't want in trycatch) that the user might be subscribed to. Things like the tile load events, promises, etc.
   // We don't want those events to resolve during the render loop because the events might add new primitives
-  callAfterRenderFunctions(this);
+  if (shouldRenderPrimitives) {
+    callAfterRenderFunctions(this);
+  }
 
   if (shouldRender) {
     this._postRender.raiseEvent(this, time);

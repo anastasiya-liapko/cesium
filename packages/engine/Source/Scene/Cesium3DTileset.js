@@ -3170,10 +3170,12 @@ function raiseLoadProgressEvent(tileset, frameState) {
 
   if (progressChanged) {
     frameState.afterRender.push(function () {
-      tileset.loadProgress.raiseEvent(
-        numberOfPendingRequests,
-        numberOfTilesProcessing
-      );
+      if (!tileset.isDestroyed()) {
+        tileset.loadProgress.raiseEvent(
+          numberOfPendingRequests,
+          numberOfTilesProcessing
+        );
+      }
 
       return true;
     });
@@ -3189,13 +3191,17 @@ function raiseLoadProgressEvent(tileset, frameState) {
   // model's readyEvent
   if (progressChanged && tileset._tilesLoaded) {
     frameState.afterRender.push(function () {
-      tileset.allTilesLoaded.raiseEvent();
+      if (!tileset.isDestroyed()) {
+        tileset.allTilesLoaded.raiseEvent();
+      }
       return true;
     });
     if (!tileset._initialTilesLoaded) {
       tileset._initialTilesLoaded = true;
       frameState.afterRender.push(function () {
-        tileset.initialTilesLoaded.raiseEvent();
+        if (!tileset.isDestroyed()) {
+          tileset.initialTilesLoaded.raiseEvent();
+        }
         return true;
       });
     }
